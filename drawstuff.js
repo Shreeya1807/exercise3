@@ -297,24 +297,55 @@ function interpRect(imagedata,top,bottom,left,right,globals,tlAttribs,trAttribs,
     // assumes attribs contains a "diffuse" property which is a Color object
     // assumes all other properties are floats
     // modifies pass image data
-    function shadePixel(imagedata,pixX,pixY,globals,attribs) {
-        var difColor = new Color();
-        var worldLoc = new Vector(pixX,pixY,0); // assume rect at z=0
-        var lVect = new Vector();
-        
-        // get light vector
-        lVect.copy(globals.lightPos);
-        lVect = Vector.subtract(lVect,worldLoc);
-        lVect = Vector.normalize(lVect);
-        var NdotL = Vector.dot(lVect,new Vector(0,0,1)); // rect in xy plane
-        
-        // calc diffuse color
-        difColor.r = attribs.diffuse.r * globals.lightCol.r/255 * NdotL;
-        difColor.g = attribs.diffuse.g * globals.lightCol.g/255 * NdotL;
-        difColor.b = attribs.diffuse.b * globals.lightCol.b/255 * NdotL;
-        
-        drawPixel(imagedata,pixX,pixY,difColor);
-    } // end shade pixel
+    function shadePixel(imagedata, pixX, pixY, globals, attribs) {
+    var worldLoc = new Vector(pixX, pixY, 0);
+    var normal = new Vector(0, 0, 1);
+
+    // Direction from the surface toward the light.
+    var lightDir = Vector.normalize(
+        Vector.subtract(globals.lightPos, worldLoc)
+    );
+
+    // Direction from the surface toward the eye.
+    var viewDir = Vector.normalize(
+        Vector.subtract(globals.eyePos, worldLoc)
+    );
+
+    var NdotL = Math.max(0, Vector.dot(normal, lightDir));
+
+    // Phong reflection direction: R = 2(N dot L)N - L.
+    var reflectDir = Vector.subtract(
+        Vector.scale(2 * NdotL, normal),
+        lightDir
+    );
+
+    var specular = 0;
+    if (NdotL > 0) {
+        specular = Math.pow(
+            Math.max(0, Vector.dot(reflectDir, viewDir)),
+            globals.shininess
+        );
+    }
+
+    function channel(material, light) {
+        var ambient = globals.ka * material;
+        var diffuse = globals.kd * material * (light / 255) * NdotL;
+        var highlight = globals.ks * light * specular;
+
+        return Math.round(
+            Math.min(255, Math.max(0, ambient + diffuse + highlight))
+        );
+    }
+
+    var color = new Color(
+        channel(attribs.diffuse.r, globals.lightCol.r),
+        channel(attribs.diffuse.g, globals.lightCol.g),
+        channel(attribs.diffuse.b, globals.lightCol.b),
+        255
+    );
+
+    drawPixel(imagedata, pixX, pixY, color);
+} // end shade pixel
     
     try {
         if (   (typeof(tlAttribs) !== "object") || (typeof(trAttribs) !== "object")
