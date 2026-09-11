@@ -391,8 +391,15 @@ function main() {
     var imagedata = context.createImageData(w,h);
  
     // Define a rectangle in 2D with colors and coords at corners
-    var globals = { lightPos: new Vector(100,100,50),  // light over left upper rect
-                    lightCol: new Color(255,255,255)}; // light is white
+    var globals = {
+    lightPos: new Vector(170, 100, 25), // closer and moved right
+    lightCol: new Color(255, 255, 255),
+    eyePos: new Vector(125, 100, 200),
+    ka: 0.15,       // ambient strength
+    kd: 0.70,       // diffuse strength
+    ks: 0.50,       // specular strength
+    shininess: 24   // controls highlight size
+};
     var tlAttribs = { diffuse: new Color(0,0,255)};    // all four rect verts blue
     var trAttribs = { diffuse: new Color(0,0,255)};
     var brAttribs = { diffuse: new Color(0,0,255)};
