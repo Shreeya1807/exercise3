@@ -423,7 +423,7 @@ function main() {
  
     // Define a rectangle in 2D with colors and coords at corners
     var globals = {
-    lightPos: new Vector(170, 100, 25), // closer and moved right
+    lightPos: new Vector(75, 100, 25), // closer and moved right
     lightCol: new Color(255, 255, 255),
     eyePos: new Vector(125, 100, 200),
     ka: 0.15,       // ambient strength
